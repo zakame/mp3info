@@ -1,0 +1,26 @@
+#!/bin/sh
+
+PACKAGE=mp3info
+ORIGPATH=$PWD
+
+cd $SLACKTRACKSCRATCHDIR
+cp -r $ORIGPATH/* .
+
+VERSION=0.8.5a
+chown -R root:root .
+chmod -R og-w .
+
+make clean && make
+find . | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+    | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+install -vpm755 mp3info /usr/bin/
+cat mp3info.1 | gzip -9c > /usr/man/man1/mp3info.1.gz
+install -vpm755 gmp3info /usr/bin/
+
+mkdir -vpm755 /usr/doc/${PACKAGE}-${VERSION}
+cp -favv README ChangeLog LICENSE /usr/doc/${PACKAGE}-${VERSION}
+
+rm -fr /install
+mkdir -vpm755 /install
+cat ${ORIGPATH}/slack-desc > /install/slack-desc
